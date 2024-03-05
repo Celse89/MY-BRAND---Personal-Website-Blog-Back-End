@@ -1,20 +1,5 @@
 import mongoose from 'mongoose';
 
-const postSchema = new mongoose.Schema({
-    title: {
-        type: String,
-        required: true
-    },
-    content: {
-        type: String,
-        required: true
-    },
-    createdAt: {
-        type: Date,
-        default: Date.now
-    }
-});
-
 const userSchema = new mongoose.Schema({
     username: {
         type: String,
@@ -34,7 +19,17 @@ const userSchema = new mongoose.Schema({
         type: Boolean,
         default: false
     },
-    posts: [postSchema]
+    avatar: String,
+    socialMediaLinks: {
+        facebook: String,
+        twitter: String,
+        linkedin: String
+    },
+    passwordResetToken: String,
+    passwordResetTokenExpires: Date,
+    
+}, {
+    timestamps: true
 });
 
 export const User = mongoose.model('User', userSchema);

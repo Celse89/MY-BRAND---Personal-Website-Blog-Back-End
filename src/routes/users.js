@@ -1,15 +1,24 @@
 
 import express from 'express';
-import { UsersController } from '../controllers/usersControllers.js';
-import { validateSignup, validatePost, validatePostId } from '../utils/validation.js';
+
+import { UsersController } from '../controllers/usersControllers.js'; 
+import { authenticate } from '../middleware/authenticate.js';
+import { isAdmin } from '../middleware/isAdmin.js';
+
+
+
 
 const router = express.Router();
 
-router.post('/signup', validateSignup, UsersController.signup);
-router.post('/createPost', validatePost, UsersController.createPost);
-router.get('/getPosts', UsersController.getPosts);
-router.put('/updatePost', validatePostId, validatePost, UsersController.updatePost);
-router.delete('/deletePost', validatePostId, UsersController.deletePost);
-router.post('/login', UsersController.login);
+router.get('/', authenticate, UsersController.getAllUsers);
+router.get('/:id', authenticate, UsersController.getUser);
+router.put('/:id', authenticate, UsersController.updateUser);
+router.delete('/:id', authenticate, isAdmin, UsersController.deleteUser);
+
+
+
+
+
+
 
 export default router;

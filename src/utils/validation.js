@@ -1,5 +1,5 @@
-
 import Joi from 'joi';
+import { CustomError } from '../utils/error.js';
 
 export const validateSignup = (req, res, next) => {
     const schema = Joi.object({
@@ -46,3 +46,21 @@ export const validatePostId = (req, res, next) => {
 
     next();
 };
+
+
+export const validatePostIdParam = (req, res, next) => {
+    const schema = Joi.object({
+        id: Joi.string().required()
+    });
+
+    const { error } = schema.validate(req.params);
+
+    if(error) {
+        throw new CustomError(error.details[0].message, 400);
+    }
+
+    next();
+};
+
+
+

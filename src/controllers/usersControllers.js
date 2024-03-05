@@ -1,8 +1,8 @@
-// controllers/usersController.js
 import bcrypt from 'bcrypt';
 import { User } from "../models/userModel.js";
 import { JWT } from "../utils/jwt.js";
-import { validateSignup, validatePost, validatePostId } from "../utils/validation.js";
+import { CustomError } from '../utils/error.js';
+import mongoose from 'mongoose';
 
 const BCRYPT_SALT_ROUNDS = 10;
 
@@ -11,17 +11,14 @@ export class UsersController {
         try {
             const { username, email, password } = req.body;
 
-            // Checking if the user exists
             const existingUser = await User.findOne({ email });
 
             if(existingUser) {
                 throw new CustomError("User already exists", 400);
             }
 
-            // Hashing the password
             const hashedPassword = await bcrypt.hash(password, BCRYPT_SALT_ROUNDS);
 
-            // Creating a new user 
             const user = new User({
                 username,
                 email,
@@ -38,92 +35,7 @@ export class UsersController {
         }
     }
 
-    static async createPost(req, res, next) {
-        try {
-            const { title, content } = req.body;
-
-            const user = await User.findById(req.user.id);
-
-            if (!user) {
-                throw new CustomError("User not found", 404);
-            }
-
-            user.posts.push({ title, content });
-            await user.save();
-
-            res.status(201).json({ message: "Post created" });
-        } catch (error) {
-            next(error);
-        }
-    }
-
-    static async getPosts(req, res, next) {
-        try {
-            const user = await User.findById(req.user.id);
-
-            if (!user) {
-                throw new CustomError("User not found", 404);
-            }
-
-            res.status(200).json(user.posts);
-        } catch (error) {
-            next(error);
-        }
-    }
-
-    static async updatePost(req, res, next) {
-        try {
-            const { postId, title, content } = req.body;
-
-            const user = await User.findById(req.user.id);
-
-            if (!user) {
-                throw new CustomError("User not found", 404);
-            }
-
-            const post = user.posts.id(postId);
-
-            if (!post) {
-                throw new CustomError("Post not found", 404);
-            }
-
-            post.title = title;
-            post.content = content;
-
-            await user.save();
-
-            res.status(200).json({ message: "Post updated" });
-        } catch (error) {
-            next(error);
-        }
-    }
-
-    static async deletePost(req, res, next) {
-        try {
-            const { postId } = req.body;
-
-            const user = await User.findById(req.user.id);
-
-            if (!user) {
-                throw new CustomError("User not found", 404);
-            }
-
-            const post = user.posts.id(postId);
-
-            if (!post) {
-                throw new CustomError("Post not found", 404);
-            }
-
-            post.remove();
-
-            await user.save();
-
-            res.status(200).json({ message: "Post deleted" });
-        } catch (error) {
-            next(error);
-        }
-    }
-
+    
     static async login(req, res, next) {
         try {
             const { email, password } = req.body;
@@ -133,8 +45,6 @@ export class UsersController {
             if (!user) {
                 throw new CustomError("User not found", 404);
             }
-    
-    
             const isPasswordCorrect = await bcrypt.compare(password, user.password);
     
             if (!isPasswordCorrect) {
@@ -143,10 +53,83 @@ export class UsersController {
     
         
             const token = JWT.generateJwt({ id: user._id });
-    
             res.status(200).json({ token });
+
         } catch (error) {
             next(error);
         }
     }
+
+    static async getAllUsers(req, res, next) {
+        try {
+            const users = await User.find({});
+            res.status(200).json(users);
+        } catch (error) {
+            next(error);
+        }
+    }
+
+    static async getUser(req, res, next) {
+        try {
+            const { id } = req.params;
+            if (!mongoose.Types.ObjectId.isValid(id)) {
+                throw new CustomError('Invalid user id', 400);
+            }
+            const user = await User.findById(id);
+            if (!user) {
+                throw new CustomError('User not found', 404);
+            }
+            res.status(200).json(user);
+        } catch (error) {
+            next(error);
+        }
+    }
+
+   
+    static async updateUser(req, res, next) {
+        try {
+            const { id } = req.params;
+            const updateData = { ...req.body };
+    
+            if (!mongoose.Types.ObjectId.isValid(id)) {
+                throw new CustomError('Invalid user id', 400);
+            }
+    
+            if (updateData.password) {
+                const salt = await bcrypt.genSalt(BCRYPT_SALT_ROUNDS);
+                updateData.password = await bcrypt.hash(updateData.password, salt);
+            }
+    
+            const updatedUser = await User.findByIdAndUpdate(id, updateData, { new: true });
+    
+            if (!updatedUser) {
+                throw new CustomError('User not found', 404);
+            }
+    
+            res.status(200).json(updatedUser);
+        } catch (error) {
+            next(error);
+        }
+    }
+
+    static async deleteUser(req, res, next) {
+        try {
+            const { id } = req.params;
+
+            if (!mongoose.Types.ObjectId.isValid(id)) {
+                throw new CustomError('Invalid user id', 400);
+            }
+
+            const deletedUser = await User.findByIdAndDelete(id);
+
+            if (!deletedUser) {
+                throw new CustomError('User not found', 404);
+            }
+
+            res.status(200).json({ message: 'User deleted successfully' });
+        } catch (error) {
+            next(error);
+        }
+    }
+
 }
