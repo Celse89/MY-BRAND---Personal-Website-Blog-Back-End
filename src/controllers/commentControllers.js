@@ -36,7 +36,7 @@ class CommentControllers {
 
     static async likeComment(req, res, next) {
         try {
-            const { commentId } = req.body;
+            const { commentId } = req.params;
             const userId = req.user.id;
 
             const comment = await Comment.findById(commentId);

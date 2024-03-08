@@ -6,7 +6,7 @@ export const validateSignup = (req, res, next) => {
         username: Joi.string().alphanum().min(3).max(30).required(),
         email: Joi.string().email().required(),
         password: Joi.string().pattern(new RegExp('^[a-zA-Z0-9]{3,30}$')).required(),
-        confirmPassword: Joi.ref('password')
+        confirmPassword: Joi.any().equal(Joi.ref('password')).required().label('Confirm password').messages({ 'any.only': '{{#label}} does not match' })
     });
 
     const { error } = schema.validate(req.body);

@@ -22,3 +22,6 @@ const errorHandlingMiddleware = (err, req, res, next) => {
 };
 
 export { CustomError, ValidationError, NotFoundError, errorHandlingMiddleware };
+
+
+

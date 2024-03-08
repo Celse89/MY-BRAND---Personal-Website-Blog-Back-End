@@ -1,4 +1,5 @@
 import bcrypt from 'bcrypt';
+
 import { User } from "../models/userModel.js";
 import { JWT } from "../utils/jwt.js";
 import { CustomError } from '../utils/error.js';
@@ -9,7 +10,11 @@ const BCRYPT_SALT_ROUNDS = 10;
 export class UsersController {
     static async signup(req, res, next) {
         try {
-            const { username, email, password } = req.body;
+            const { username, email, password, confirmPassword } = req.body;
+
+            if(password !== confirmPassword) {
+                throw new CustomError("Passwords do not match", 400);
+            }
 
             const existingUser = await User.findOne({ email });
 
@@ -29,7 +34,7 @@ export class UsersController {
 
             const token = JWT.generateJwt({id: user._id});
 
-            res.status(201).json({ token })
+            res.status(201).json({ message: 'Signed up successfully', token });
         } catch (error) {
             next(error);
         }
@@ -53,7 +58,7 @@ export class UsersController {
     
         
             const token = JWT.generateJwt({ id: user._id });
-            res.status(200).json({ token });
+            res.status(200).json({ message: 'Logged in successfully', token });
 
         } catch (error) {
             next(error);
@@ -127,6 +132,56 @@ export class UsersController {
             }
 
             res.status(200).json({ message: 'User deleted successfully' });
+        } catch (error) {
+            next(error);
+        }
+    }
+
+    static async updateSubscription(req, res, next) {
+        try {
+            const { id } = req.params;
+            const user = await User.findById(id);
+            if (!user) {
+                throw new NotFoundError("User not found");
+            }
+    
+            user.subscribed = !user.subscribed;
+            await user.save();
+    
+            res.status(200).json({ message: "Subscription updated", subscribed: user.subscribed });
+        } catch (error) {
+            next(error);
+        }
+    }
+
+
+
+    static async updateProfilePicture(req, res, next) {
+        try {
+            const { id } = req.params;
+
+            if (!req.file) {
+                throw new CustomError('No file uploaded', 400);
+            }
+
+            const profilePicture = '/uploads/profiles/' + req.file.filename;
+
+            if (!mongoose.Types.ObjectId.isValid(id)) {
+                throw new CustomError('Invalid user id', 400);
+            }
+
+            const updatedUser = await User.findByIdAndUpdate(id, { profilePicture }, { new: true });
+
+            if (!updatedUser) {
+                throw new CustomError('User not found', 404);
+            }
+
+            const userWithProfilePictureUrl = {
+                ...updatedUser._doc,
+                profilePicture: 'http://localhost:5500' + updatedUser.profilePicture
+            };
+
+            res.status(200).json(userWithProfilePictureUrl);
         } catch (error) {
             next(error);
         }

@@ -8,22 +8,24 @@ export class BlogsControllers {
     static async createPost(req, res, next) {
         try {
             const { title, content } = req.body;
-    
+            const image = '/uploads/blogs/' + req.file.filename;
+
             const user = await User.findById(req.user.id);
-    
+
             if (!user) {
                 throw new NotFoundError("User not found");
             }
-    
+
             const blogPost = new Blogs({
                 author: user.username,
                 authorId: user._id,
                 title,
-                content
+                content,
+                image
             });
-    
+
             await blogPost.save();
-    
+
             res.status(201).json({ message: "Post created", postId: blogPost._id });
         } catch (error) {
             if (error instanceof ValidationError) {
@@ -73,7 +75,8 @@ export class BlogsControllers {
 
     static async updatePost(req, res, next) {
         try {
-            const { postId, title, content } = req.body;
+            const { id: postId } = req.params;
+            const { title, content } = req.body;
 
             const blogPost = await Blogs.findById(postId);
 
@@ -101,15 +104,15 @@ export class BlogsControllers {
 
     static async deletePost(req, res, next) {
         try {
-            const { postId } = req.body;
+            const { id } = req.params;
     
-            const blogPost = await Blogs.findById(postId);
+            const blogPost = await Blogs.findById(id);
     
             if (!blogPost) {
                 throw new NotFoundError("Post not found");
             }
     
-            await Blogs.deleteOne({ _id: postId });
+            await Blogs.deleteOne({ _id: id });
     
             res.status(200).json({ message: "Post deleted" });
         } catch (error) {
@@ -126,7 +129,7 @@ export class BlogsControllers {
 
     static async likePost(req, res, next) {
         try {
-            const { postId } = req.body;
+            const { id: postId } = req.params;
             const userId = req.user.id;
     
             const blogPost = await Blogs.findById(postId);
@@ -155,4 +158,38 @@ export class BlogsControllers {
             next(error);
         }
     }
+
+    static async unlikePost(req, res, next) {
+        try {
+            const { id } = req.params;
+            const userId = req.user.id;
+    
+            const blogPost = await Blogs.findById(id);
+    
+            if (!blogPost) {
+                throw new NotFoundError("Post not found");
+            }
+    
+            const index = blogPost.likes.indexOf(userId);
+            if (index === -1) {
+                throw new CustomError("User has not liked the post", 400);
+            }
+    
+            blogPost.likes.splice(index, 1);
+    
+            await blogPost.save();
+    
+            res.status(200).json({ message: "Post unliked" });
+        } catch (error) {
+            if (error instanceof ValidationError) {
+                res.status(400);
+            } else if (error instanceof NotFoundError) {
+                res.status(404);
+            } else {
+                res.status(500);
+            }
+            next(error);
+        }
+    }
+
 }
