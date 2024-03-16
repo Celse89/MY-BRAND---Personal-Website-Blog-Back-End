@@ -2,11 +2,10 @@ import { Message } from '../models/messageModel.js';
 import { NotFoundError } from '../utils/error.js';
 
 class MessageControllers {
-
     static async getMessages(req, res, next) {
         try {
             const messages = await Message.find();
-            res.status(200).json(messages);
+            res.status(200).json({ status: 'ok', data: messages });
         } catch (error) {
             next(error);
         }
@@ -16,7 +15,7 @@ class MessageControllers {
         try {
             const message = new Message(req.body);
             await message.save();
-            res.status(201).json(message);
+            res.status(201).json({ status: 'ok', data: message });
         } catch (error) {
             next(error);
         }
@@ -28,7 +27,7 @@ class MessageControllers {
             if (!message) {
                 throw new NotFoundError('Message not found');
             }
-            res.status(200).json(message);
+            res.status(200).json({ status: 'ok', data: message });
         } catch (error) {
             next(error);
         }
@@ -40,7 +39,7 @@ class MessageControllers {
             if (!message) {
                 throw new NotFoundError('Message not found');
             }
-            res.status(200).json({ message: 'Message deleted' });
+            res.status(200).json({ status: 'ok', message: 'Message deleted' });
         } catch (error) {
             next(error);
         }
@@ -52,7 +51,7 @@ class MessageControllers {
             if (!message) {
                 throw new NotFoundError('Message not found');
             }
-            res.status(200).json({ message: 'Reply sent' });
+            res.status(200).json({ status: 'ok', message: 'Reply sent' });
         } catch (error) {
             next(error);
         }

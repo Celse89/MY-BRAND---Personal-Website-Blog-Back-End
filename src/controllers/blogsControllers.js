@@ -7,15 +7,19 @@ import { CustomError, NotFoundError, ValidationError } from '../utils/error.js';
 export class BlogsControllers {
     static async createPost(req, res, next) {
         try {
-            const { title, content } = req.body;
-            const image = '/uploads/blogs/' + req.file.filename;
-
+            const { title, content } = req.body; 
+            let image = ""; 
+    
+            if (req.file) {
+                image = '/uploads/blogs/' + req.file.filename;
+            }
+    
             const user = await User.findById(req.user.id);
-
+    
             if (!user) {
                 throw new NotFoundError("User not found");
             }
-
+    
             const blogPost = new Blogs({
                 author: user.username,
                 authorId: user._id,
@@ -23,10 +27,10 @@ export class BlogsControllers {
                 content,
                 image
             });
-
+    
             await blogPost.save();
-
-            res.status(201).json({ message: "Post created", postId: blogPost._id });
+    
+            res.status(201).json({ ok: true, message: "Post created", postId: blogPost._id });
         } catch (error) {
             if (error instanceof ValidationError) {
                 res.status(400);
@@ -38,7 +42,7 @@ export class BlogsControllers {
             next(error);
         }
     }
-
+    
     static async getPosts(req, res, next) {
         try {
             const page = parseInt(req.query.page) || 1;
@@ -46,11 +50,12 @@ export class BlogsControllers {
             const skip = (page - 1) * limit;
 
             const blogPosts = await Blogs.find().skip(skip).limit(limit);
-            res.status(200).json(blogPosts);
+            res.status(200).json({ ok: true, data: blogPosts });
         } catch (error) {
             next(error);
         }
     }
+ 
 
     static async getPost(req, res, next) {
         try {
@@ -62,7 +67,7 @@ export class BlogsControllers {
                 throw new NotFoundError("Post not found");
             }
     
-            res.status(200).json(blogPost);
+            res.status(200).json({ ok: true, data: blogPost });
         } catch (error) {
             if (error instanceof NotFoundError) {
                 res.status(404);
@@ -72,6 +77,7 @@ export class BlogsControllers {
             next(error);
         }
     }
+
 
     static async updatePost(req, res, next) {
         try {
@@ -89,7 +95,7 @@ export class BlogsControllers {
 
             await blogPost.save();
 
-            res.status(200).json({ message: "Post updated" });
+            res.status(200).json({ ok: true, message: "Post updated" });
         } catch (error) {
             if (error instanceof ValidationError) {
                 res.status(400);
@@ -101,6 +107,7 @@ export class BlogsControllers {
             next(error);
         }
     }
+  
 
     static async deletePost(req, res, next) {
         try {
@@ -114,7 +121,7 @@ export class BlogsControllers {
     
             await Blogs.deleteOne({ _id: id });
     
-            res.status(200).json({ message: "Post deleted" });
+            res.status(200).json({ ok: true, message: "Post deleted" });
         } catch (error) {
             if (error instanceof ValidationError) {
                 res.status(400);
@@ -126,6 +133,7 @@ export class BlogsControllers {
             next(error);
         }
     }
+
 
     static async likePost(req, res, next) {
         try {
@@ -146,7 +154,7 @@ export class BlogsControllers {
     
             await blogPost.save();
     
-            res.status(200).json({ message: "Post liked" });
+            res.status(200).json({ ok: true, message: "Post liked" });
         } catch (error) {
             if (error instanceof ValidationError) {
                 res.status(400);
@@ -158,6 +166,7 @@ export class BlogsControllers {
             next(error);
         }
     }
+
 
     static async unlikePost(req, res, next) {
         try {
@@ -179,7 +188,7 @@ export class BlogsControllers {
     
             await blogPost.save();
     
-            res.status(200).json({ message: "Post unliked" });
+            res.status(200).json({ ok: true, message: "Post unliked" });
         } catch (error) {
             if (error instanceof ValidationError) {
                 res.status(400);

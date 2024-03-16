@@ -1,7 +1,7 @@
 import express from 'express';
 
 import CommentControllers from '../controllers/commentControllers.js'; 
-import { authenticate } from '../middleware/authenticate.js';
+import authenticate from '../middleware/authenticate.js';
 import { isAdmin } from '../middleware/isAdmin.js';
 import { validatePost, validatePostId } from '../utils/validation.js';
 

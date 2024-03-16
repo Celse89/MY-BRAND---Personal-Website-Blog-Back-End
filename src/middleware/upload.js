@@ -1,8 +1,23 @@
 import multer from 'multer';
+import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
+import { dirname } from 'path';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+
+const createDirectory = (dirPath) => {
+    if (!fs.existsSync(dirPath)) {
+        fs.mkdirSync(dirPath, { recursive: true });
+    }
+};
 
 const profileStorage = multer.diskStorage({
     destination: function (req, file, cb) {
-        cb(null, '../uploads/profiles/');
+        const dirPath = path.join(__dirname, '../uploads/profiles/');
+        createDirectory(dirPath);
+        cb(null, dirPath);
     },
     filename: function (req, file, cb) {
         cb(null, new Date().toISOString() + file.originalname);
@@ -11,7 +26,9 @@ const profileStorage = multer.diskStorage({
 
 const blogStorage = multer.diskStorage({
     destination: function (req, file, cb) {
-        cb(null, '../uploads/blogs/');
+        const dirPath = path.join(__dirname, '../uploads/blogs/');
+        createDirectory(dirPath);
+        cb(null, dirPath);
     },
     filename: function (req, file, cb) {
         cb(null, new Date().toISOString() + file.originalname);

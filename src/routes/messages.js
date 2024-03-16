@@ -1,7 +1,7 @@
 import express from 'express';
 
 import { MessageControllers } from '../controllers/messageControllers.js'; 
-import { authenticate } from '../middleware/authenticate.js';
+import authenticate from '../middleware/authenticate.js';
 import { isAdmin } from '../middleware/isAdmin.js';
 
 const router = express.Router();

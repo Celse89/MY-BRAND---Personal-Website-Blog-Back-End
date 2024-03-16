@@ -32,9 +32,8 @@ export class UsersController {
 
             await user.save()
 
-            const token = JWT.generateJwt({id: user._id});
 
-            res.status(201).json({ message: 'Signed up successfully', token });
+            res.status(201).json({ message: 'Signed up successfully' });
         } catch (error) {
             next(error);
         }
@@ -58,7 +57,9 @@ export class UsersController {
     
         
             const token = JWT.generateJwt({ id: user._id });
-            res.status(200).json({ message: 'Logged in successfully', token });
+
+            res.cookie('token', token, { httpOnly: true })
+            res.status(200).json({ message: 'Logged in successfully'});
 
         } catch (error) {
             next(error);
@@ -68,7 +69,7 @@ export class UsersController {
     static async getAllUsers(req, res, next) {
         try {
             const users = await User.find({});
-            res.status(200).json(users);
+            res.status(200).json({ ok: true, data: users });
         } catch (error) {
             next(error);
         }
@@ -84,7 +85,7 @@ export class UsersController {
             if (!user) {
                 throw new CustomError('User not found', 404);
             }
-            res.status(200).json(user);
+            res.status(200).json({ ok: true, data: user});
         } catch (error) {
             next(error);
         }
@@ -111,7 +112,7 @@ export class UsersController {
                 throw new CustomError('User not found', 404);
             }
     
-            res.status(200).json(updatedUser);
+            res.status(200).json({ ok: true, data: updatedUser });
         } catch (error) {
             next(error);
         }
@@ -131,7 +132,7 @@ export class UsersController {
                 throw new CustomError('User not found', 404);
             }
 
-            res.status(200).json({ message: 'User deleted successfully' });
+            res.status(200).json({ ok: true, message: 'User deleted successfully', data: deletedUser });
         } catch (error) {
             next(error);
         }
@@ -142,13 +143,13 @@ export class UsersController {
             const { id } = req.params;
             const user = await User.findById(id);
             if (!user) {
-                throw new NotFoundError("User not found");
+                throw new CustomError('User not found', 404);
             }
     
             user.subscribed = !user.subscribed;
             await user.save();
     
-            res.status(200).json({ message: "Subscription updated", subscribed: user.subscribed });
+            res.status(200).json({ ok: true, message: "Subscription updated", data: user });
         } catch (error) {
             next(error);
         }
@@ -181,10 +182,21 @@ export class UsersController {
                 profilePicture: 'http://localhost:5500' + updatedUser.profilePicture
             };
 
-            res.status(200).json(userWithProfilePictureUrl);
+            res.status(200).json({ ok: true, data: userWithProfilePictureUrl });
         } catch (error) {
             next(error);
         }
     }
 
+    static async checkToken(req, res, next) {
+        try {
+            if (req.user) {
+                res.status(200).json({ isLoggedIn: true });
+            } else {
+                res.status(401).json({ isLoggedIn: false, message: 'User is not authenticated' });
+            }
+        } catch (error) {
+            next(error);
+        }
+    }
 }
