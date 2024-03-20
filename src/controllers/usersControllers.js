@@ -39,7 +39,6 @@ export class UsersController {
         }
     }
 
-    
     static async login(req, res, next) {
         try {
             const { email, password } = req.body;
@@ -55,12 +54,10 @@ export class UsersController {
                 throw new CustomError("Invalid credentials", 401);
             }
     
-        
             const token = JWT.generateJwt({ id: user._id });
-
-            res.cookie('token', token, { httpOnly: true })
-            res.status(200).json({ message: 'Logged in successfully'});
-
+    
+            res.status(200).json({ message: 'Logged in successfully', token: token }); // Return the token in the response body
+    
         } catch (error) {
             next(error);
         }
@@ -188,15 +185,21 @@ export class UsersController {
         }
     }
 
-    static async checkToken(req, res, next) {
+    static async getUserByEmail(req, res, next) {
         try {
-            if (req.user) {
-                res.status(200).json({ isLoggedIn: true });
-            } else {
-                res.status(401).json({ isLoggedIn: false, message: 'User is not authenticated' });
+            const { email } = req.query;
+            if (!email) {
+                throw new CustomError('Email is required', 400);
             }
+            const user = await User.findOne({ email });
+            if (!user) {
+                throw new CustomError('User not found', 404);
+            }
+            res.status(200).json({ ok: true, data: user});
         } catch (error) {
             next(error);
         }
     }
+
+    
 }

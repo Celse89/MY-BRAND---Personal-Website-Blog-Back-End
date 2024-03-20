@@ -47,7 +47,8 @@ const router = express.Router();
  *       400:
  *         description: Invalid request or missing fields
  */
-router.post('/', authenticate, validatePost, BlogsControllers.createPost); 
+// router.post('/', authenticate, validatePost, BlogsControllers.createPost); 
+// router.post('/', blogUpload.single('image'), validatePost, BlogsControllers.createPost);
 
 /**
  * @swagger
@@ -129,6 +130,7 @@ router.get('/:id',validatePostIdParam, BlogsControllers.getPost);
  */
 router.put('/:id', authenticate, validatePostId, validatePost, BlogsControllers.updatePost);
 
+
 /**
  * @swagger
  * /api/blogs/{id}:
@@ -149,6 +151,7 @@ router.put('/:id', authenticate, validatePostId, validatePost, BlogsControllers.
  *         description: Blog post deleted successfully
  */
 router.delete('/:id', authenticate, validatePostId, BlogsControllers.deletePost);
+
 
 /**
  * @swagger
@@ -172,6 +175,7 @@ router.delete('/:id', authenticate, validatePostId, BlogsControllers.deletePost)
  *         description: Blog post not found
  */
 router.put('/:id/like', authenticate, BlogsControllers.likePost);
+
 
 /**
  * @swagger
@@ -227,6 +231,7 @@ router.put('/:id/unlike', authenticate, BlogsControllers.unlikePost);
  *       400:
  *         description: Invalid request or missing image
  */
+
 router.post('/', authenticate, blogUpload.single('image'), validatePost, BlogsControllers.createPost);
 
 export default router;

@@ -35,6 +35,7 @@ const router = express.Router();
  */
 router.get('/', authenticate, isAdmin, UsersController.getAllUsers);
 
+
 /**
  * @swagger
  * /api/users/{id}:
@@ -183,6 +184,37 @@ router.put('/:id/subscription', authenticate, UsersController.updateSubscription
  *         description: User not found
  */
 router.put('/:id/profilePicture', authenticate, profileUpload.single('profilePicture'), UsersController.updateProfilePicture);
+
+
+
+/**
+ * @swagger
+ * /api/users/email:
+ *   get:
+ *     summary: Get a user by email
+ *     tags: [Users]
+ *     parameters:
+ *       - in: query
+ *         name: email
+ *         required: true
+ *         description: The email of the user to retrieve.
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: User details
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/User'
+ *       404:
+ *         description: User not found
+ *       400:
+ *         description: Invalid email
+ *       500:
+ *         description: Server error
+ */
+router.get('/email', authenticate, UsersController.getUserByEmail);
 
 export default router;
 

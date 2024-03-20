@@ -27,8 +27,9 @@ class CommentControllers {
             blogPost.comments.push(comment._id);
             await blogPost.save();
     
-            res.status(201).json({ message: "Comment created", commentId: comment._id });
+            res.status(201).json({ ok: true, message: "Comment created", commentId: comment._id });
         } catch (error) {
+            console.error(error);
             next(error);
         }
     }
@@ -53,7 +54,7 @@ class CommentControllers {
 
             await comment.save();
 
-            res.status(200).json({ message: "Comment liked" });
+            res.status(200).json({ ok: true, message: "Comment liked" });
         } catch (error) {
             next(error);
         }
@@ -63,13 +64,20 @@ class CommentControllers {
         try {
             const { postId } = req.params;
 
-            const blogPost = await Blogs.findById(postId).populate('comments');
+            const blogPost = await Blogs.findById(postId)
+                .populate({
+                    path: 'comments',
+                    populate: {
+                        path: 'author',
+                        model: 'User' // replace 'User' with the name of your user model
+                    }
+                });
 
             if (!blogPost) {
                 throw new NotFoundError("Post not found");
             }
 
-            res.status(200).json({ comments: blogPost.comments });
+            res.status(200).json({ ok: true, comments: blogPost.comments });
         } catch (error) {
             next(error);
         }
@@ -90,7 +98,7 @@ class CommentControllers {
 
             await comment.save();
 
-            res.status(200).json({ message: "Comment updated" });
+            res.status(200).json({ ok: true, message: "Comment updated" });
         } catch (error) {
             next(error);
         }
@@ -108,7 +116,7 @@ class CommentControllers {
 
             await comment.remove();
 
-            res.status(200).json({ message: "Comment deleted" });
+            res.status(200).json({ ok: true, message: "Comment deleted" });
         } catch (error) {
             next(error);
         }

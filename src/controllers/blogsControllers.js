@@ -7,14 +7,18 @@ import { CustomError, NotFoundError, ValidationError } from '../utils/error.js';
 export class BlogsControllers {
     static async createPost(req, res, next) {
         try {
+            console.log('Request body:', req.body); 
+
             const { title, content } = req.body; 
             let image = ""; 
     
-            if (req.file) {
-                image = '/uploads/blogs/' + req.file.filename;
+            if (req.files) {
+                console.log('Request files:', req.files);
+                image = '/uploads/blogs/' + req.files.image[0].filename;
             }
     
             const user = await User.findById(req.user.id);
+            console.log('User:', user); 
     
             if (!user) {
                 throw new NotFoundError("User not found");
@@ -25,21 +29,27 @@ export class BlogsControllers {
                 authorId: user._id,
                 title,
                 content,
-                image
+                image: image || undefined 
             });
     
             await blogPost.save();
     
             res.status(201).json({ ok: true, message: "Post created", postId: blogPost._id });
         } catch (error) {
+            console.error('Error:', error); 
+
+            let statusCode = 500;
+            let errorMessage = 'An unexpected error occurred';
+        
             if (error instanceof ValidationError) {
-                res.status(400);
+                statusCode = 400;
+                errorMessage = 'Invalid blog post data';
             } else if (error instanceof NotFoundError) {
-                res.status(404);
-            } else {
-                res.status(500);
+                statusCode = 404;
+                errorMessage = 'User not found';
             }
-            next(error);
+        
+            res.status(statusCode).json({ ok: false, message: errorMessage });
         }
     }
     

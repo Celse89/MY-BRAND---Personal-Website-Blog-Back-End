@@ -1,5 +1,9 @@
 import { Message } from '../models/messageModel.js';
 import { NotFoundError } from '../utils/error.js';
+import nodemailer from 'nodemailer';
+import dotenv from 'dotenv';
+
+dotenv.config();
 
 class MessageControllers {
     static async getMessages(req, res, next) {
@@ -51,8 +55,44 @@ class MessageControllers {
             if (!message) {
                 throw new NotFoundError('Message not found');
             }
+    
+            if (!message) {
+                return res.status(404).json({ status: 'error', message: 'Message not found' });
+            }
+    
+            const replyContent = req.body.message;
+            message.replies.push(replyContent); 
+    
+            try {
+                await message.save(); 
+            } catch (error) {
+                console.error('Error saving message:', error);
+                throw error;
+            }
+    
+            let transporter = nodemailer.createTransport({
+                service: 'gmail',
+                auth: {
+                    user: process.env.EMAIL,
+                    pass: process.env.PASSWORD
+                }
+            });
+    
+            try {
+                let info = await transporter.sendMail({
+                    from: '"Celse Honore RUGIRA " <rugiracelse89@gmail.com>',
+                    to: req.body.email,
+                    subject: "New Reply", 
+                    text: replyContent, 
+                });
+            } catch (error) {
+                console.error('Error sending email:', error);
+                throw error;
+            }
+    
             res.status(200).json({ status: 'ok', message: 'Reply sent' });
         } catch (error) {
+            console.error('Error in replyMessage:', error);
             next(error);
         }
     }

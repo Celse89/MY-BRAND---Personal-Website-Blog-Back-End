@@ -81,7 +81,4 @@ router.post('/login', UsersController.login);
 
 
 
-router.get('/checkToken', authenticate, UsersController.checkToken);
-
-
 export default router;

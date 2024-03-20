@@ -12,7 +12,11 @@ const messageSchema = new mongoose.Schema({
     message: {
         type: String,
         required: true
-    }
+    },
+    replies: [{
+        type: String,
+        default: []
+    }]
 }, {
     timestamps: true
 });
