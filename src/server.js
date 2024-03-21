@@ -11,6 +11,9 @@ import messageRoutes from './routes/messages.js';
 import setupUserSwagger from './docs/usersSwagger.js';
 import setupBlogSwagger from './docs/blogsSwagger.js';
 import setupAuthSwagger from './docs/authSwagger.js';
+import setupMessagesSwagger from './docs/messagesSwagger.js';
+import setupCommentsSwagger from './docs/commentsSwagger.js';
+
 
 import { errorHandlingMiddleware } from './utils/error.js';
 import connectDB from './database/connection.js';
@@ -29,6 +32,8 @@ app.use(express.json());
 setupUserSwagger(app);
 setupBlogSwagger(app);
 setupAuthSwagger(app);
+setupMessagesSwagger(app);
+setupCommentsSwagger(app);
 
 app.use('/api/users', userRoutes);
 app.use('/api/blogs', blogRoutes);

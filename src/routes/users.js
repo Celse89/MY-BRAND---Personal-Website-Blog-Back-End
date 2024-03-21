@@ -65,7 +65,7 @@ router.get('/', authenticate, isAdmin, UsersController.getAllUsers);
  *       500:
  *         description: Server error
  */
-router.get('/:id', authenticate, UsersController.getUser);
+router.get('/:id', UsersController.getUser);
 
 /**
  * @swagger
@@ -215,6 +215,51 @@ router.put('/:id/profilePicture', authenticate, profileUpload.single('profilePic
  *         description: Server error
  */
 router.get('/email', authenticate, UsersController.getUserByEmail);
+
+/**
+ * @swagger
+ * /api/users/{userId}/password:
+ *   put:
+ *     summary: Update a user's password
+ *     tags: [Users]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: userId
+ *         required: true
+ *         description: ID of the user to update password
+ *         schema:
+ *           type: string
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               currentPassword:
+ *                 type: string
+ *               newPassword:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Password updated successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *       400:
+ *         description: Invalid request
+ *       401:
+ *         description: Current password is incorrect
+ *       404:
+ *         description: User not found
+ */
+router.put('/:userId/password', authenticate, UsersController.updatePassword);
 
 export default router;
 

@@ -52,11 +52,12 @@ export class UsersController {
     
             if (!isPasswordCorrect) {
                 throw new CustomError("Invalid credentials", 401);
+                
             }
     
             const token = JWT.generateJwt({ id: user._id });
     
-            res.status(200).json({ message: 'Logged in successfully', token: token }); // Return the token in the response body
+            res.status(200).json({ message: 'Logged in successfully', token: token, userId: user._id }); // Return the token in the response body
     
         } catch (error) {
             next(error);
@@ -91,29 +92,74 @@ export class UsersController {
    
     static async updateUser(req, res, next) {
         try {
-            const { id } = req.params;
-            const updateData = { ...req.body };
+          const { id } = req.params;
+          const { username, email, isAdmin, subscribed } = req.body;
     
-            if (!mongoose.Types.ObjectId.isValid(id)) {
-                throw new CustomError('Invalid user id', 400);
+          if (!mongoose.Types.ObjectId.isValid(id)) {
+            throw new CustomError('Invalid user id', 400);
+          }
+    
+          const user = await User.findById(id);
+    
+          if (!user) {
+            throw new CustomError('User not found', 404);
+          }
+    
+          if (username) {
+            user.username = username;
+          }
+    
+          if (email) {
+            user.email = email;
+          }
+    
+          if (isAdmin !== undefined) {
+            user.isAdmin = isAdmin;
+          }
+    
+          if (subscribed !== undefined) {
+            user.subscribed = subscribed;
+          }
+    
+          await user.save();
+    
+          const updatedUser = user.toObject();
+          delete updatedUser.password;
+    
+          res.status(200).json({ ok: true, data: updatedUser });
+        } catch (error) {
+          next(error);
+        }
+    }
+
+    static async updatePassword(req, res, next) {
+        try {
+            const { currentPassword, newPassword } = req.body;
+            const userId = req.params.userId;
+    
+            const user = await User.findById(userId);
+    
+            if (!user) {
+                throw new CustomError("User not found", 404);
+            }
+            const isPasswordCorrect = await bcrypt.compare(currentPassword, user.password);
+    
+            if (!isPasswordCorrect) {
+                throw new CustomError("Current password is incorrect", 401);
             }
     
-            if (updateData.password) {
-                const salt = await bcrypt.genSalt(BCRYPT_SALT_ROUNDS);
-                updateData.password = await bcrypt.hash(updateData.password, salt);
-            }
+            const hashedPassword = await bcrypt.hash(newPassword, BCRYPT_SALT_ROUNDS);
+            user.password = hashedPassword;
+            await user.save();
     
-            const updatedUser = await User.findByIdAndUpdate(id, updateData, { new: true });
+            res.status(200).json({ message: 'Password updated successfully' }); 
     
-            if (!updatedUser) {
-                throw new CustomError('User not found', 404);
-            }
-    
-            res.status(200).json({ ok: true, data: updatedUser });
         } catch (error) {
             next(error);
         }
     }
+
+
 
     static async deleteUser(req, res, next) {
         try {

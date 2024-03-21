@@ -128,7 +128,7 @@ router.get('/:id',validatePostIdParam, BlogsControllers.getPost);
  *       404:
  *         description: Blog post not found
  */
-router.put('/:id', authenticate, validatePostId, validatePost, BlogsControllers.updatePost);
+router.put('/:id', authenticate, validatePost, BlogsControllers.updatePost);
 
 
 /**
@@ -150,7 +150,7 @@ router.put('/:id', authenticate, validatePostId, validatePost, BlogsControllers.
  *       200:
  *         description: Blog post deleted successfully
  */
-router.delete('/:id', authenticate, validatePostId, BlogsControllers.deletePost);
+router.delete('/:id', authenticate, BlogsControllers.deletePost);
 
 
 /**

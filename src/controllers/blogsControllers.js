@@ -12,7 +12,7 @@ export class BlogsControllers {
             const { title, content } = req.body; 
             let image = ""; 
     
-            if (req.files) {
+            if (req.files && req.files.image && req.files.image[0]) {
                 console.log('Request files:', req.files);
                 image = '/uploads/blogs/' + req.files.image[0].filename;
             }
@@ -55,11 +55,7 @@ export class BlogsControllers {
     
     static async getPosts(req, res, next) {
         try {
-            const page = parseInt(req.query.page) || 1;
-            const limit = parseInt(req.query.limit) || 10;
-            const skip = (page - 1) * limit;
-
-            const blogPosts = await Blogs.find().skip(skip).limit(limit);
+            const blogPosts = await Blogs.find();
             res.status(200).json({ ok: true, data: blogPosts });
         } catch (error) {
             next(error);
@@ -92,21 +88,36 @@ export class BlogsControllers {
     static async updatePost(req, res, next) {
         try {
             const { id: postId } = req.params;
-            const { title, content } = req.body;
-
+            const { title, content, image: imageUrl } = req.body;
+    
+            let image = "";
+    
+            if (req.files && req.files.image && req.files.image[0]) {
+                console.log('Request files:', req.files);
+                image = '/uploads/blogs/' + req.files.image[0].filename;
+            } else if (imageUrl) {
+                // If no new image file is provided, use the existing image URL
+                image = imageUrl;
+            }
+    
             const blogPost = await Blogs.findById(postId);
-
+    
             if (!blogPost) {
                 throw new NotFoundError("Post not found");
             }
-
+    
             blogPost.title = title;
             blogPost.content = content;
-
+            if (image) { // Only update image if a new one is provided
+                blogPost.image = image;
+            }
+    
             await blogPost.save();
-
+    
             res.status(200).json({ ok: true, message: "Post updated" });
         } catch (error) {
+            
+            console.log('Error:', error);
             if (error instanceof ValidationError) {
                 res.status(400);
             } else if (error instanceof NotFoundError) {
@@ -126,21 +137,19 @@ export class BlogsControllers {
             const blogPost = await Blogs.findById(id);
     
             if (!blogPost) {
-                throw new NotFoundError("Post not found");
+                return res.status(404).json({ ok: false, message: "Post not found" });
             }
     
             await Blogs.deleteOne({ _id: id });
     
             res.status(200).json({ ok: true, message: "Post deleted" });
         } catch (error) {
-            if (error instanceof ValidationError) {
-                res.status(400);
-            } else if (error instanceof NotFoundError) {
-                res.status(404);
+            console.error('Error:', error);
+            if (error instanceof mongoose.Error.CastError) {
+                res.status(400).json({ ok: false, message: "Invalid blog post ID" });
             } else {
-                res.status(500);
+                res.status(500).json({ ok: false, message: "An unexpected error occurred" });
             }
-            next(error);
         }
     }
 

@@ -3,6 +3,8 @@ import { fileURLToPath } from 'url';
 import { dirname } from 'path';
 import { User } from './userSchema.js';
 import { Blogs } from './blogsSchema.js'
+import { Messages } from './messagesSchema.js'
+import { Comments } from './commentsSchema.js'
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -16,7 +18,7 @@ export const options = {
     },
     components: {
       schemas: {
-        User, Blogs
+        User, Blogs, Messages, Comments
       },
       securitySchemes: {
         bearerAuth: {
@@ -31,5 +33,7 @@ export const options = {
     path.resolve(__dirname, '../routes/auth.js'),
     path.resolve(__dirname, '../routes/users.js'),
     path.resolve(__dirname, '../routes/blogs.js'),
+    path.resolve(__dirname, '../routes/messages.js'),
+    path.resolve(__dirname, '../routes/comments.js'),
   ],
 };
