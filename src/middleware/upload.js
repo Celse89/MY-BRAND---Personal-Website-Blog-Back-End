@@ -20,7 +20,7 @@ const profileStorage = multer.diskStorage({
         cb(null, dirPath);
     },
     filename: function (req, file, cb) {
-        cb(null, new Date().toISOString() + file.originalname);
+        cb(null, file.originalname);
     }
 });
 
@@ -31,7 +31,7 @@ const blogStorage = multer.diskStorage({
         cb(null, dirPath);
     },
     filename: function (req, file, cb) {
-        cb(null, new Date().toISOString() + file.originalname);
+        cb(null, file.originalname);
     }
 });
 

@@ -12,9 +12,9 @@ export class BlogsControllers {
             const { title, content } = req.body; 
             let image = ""; 
     
-            if (req.files && req.files.image && req.files.image[0]) {
-                console.log('Request files:', req.files);
-                image = '/uploads/blogs/' + req.files.image[0].filename;
+            if (req.file) {
+                console.log('Request file:', req.file);
+                image = req.file.filename;
             }
     
             const user = await User.findById(req.user.id);
@@ -94,7 +94,7 @@ export class BlogsControllers {
     
             if (req.files && req.files.image && req.files.image[0]) {
                 console.log('Request files:', req.files);
-                image = '/uploads/blogs/' + req.files.image[0].filename;
+                image = 'http://localhost:5500/uploads/blogs/' + req.files.image[0].filename;
             } else if (imageUrl) {
                 // If no new image file is provided, use the existing image URL
                 image = imageUrl;

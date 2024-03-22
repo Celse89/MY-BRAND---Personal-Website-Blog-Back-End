@@ -43,12 +43,12 @@ const router = express.Router();
  *         content:
  *           application/json:
  *             schema:
- *               $ref: '#/components/schemas/Blog'
+ *               $ref: '#/components/schemas/Blogs'
  *       400:
  *         description: Invalid request or missing fields
  */
 // router.post('/', authenticate, validatePost, BlogsControllers.createPost); 
-// router.post('/', blogUpload.single('image'), validatePost, BlogsControllers.createPost);
+router.post('/', authenticate, blogUpload.single('image'), validatePost, BlogsControllers.createPost);
 
 /**
  * @swagger
@@ -64,7 +64,7 @@ const router = express.Router();
  *             schema:
  *               type: array
  *               items:
- *                 $ref: '#/components/schemas/Blog'
+ *                 $ref: '#/components/schemas/Blogs'
  */
 router.get('/', BlogsControllers.getPosts); 
 
@@ -87,7 +87,7 @@ router.get('/', BlogsControllers.getPosts);
  *         content:
  *           application/json:
  *             schema:
- *               $ref: '#/components/schemas/Blog'
+ *               $ref: '#/components/schemas/Blogs'
  *       404:
  *         description: Blog post not found
  *       400:
@@ -117,14 +117,14 @@ router.get('/:id',validatePostIdParam, BlogsControllers.getPost);
  *       content:
  *         application/json:
  *           schema:
- *             $ref: '#/components/schemas/Blog'
+ *             $ref: '#/components/schemas/Blogs'
  *     responses:
  *       200:
  *         description: Blog post updated successfully
  *         content:
  *           application/json:
  *             schema:
- *               $ref: '#/components/schemas/Blog'
+ *               $ref: '#/components/schemas/Blogs'
  *       404:
  *         description: Blog post not found
  */
