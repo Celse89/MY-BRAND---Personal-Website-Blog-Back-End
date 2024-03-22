@@ -57,7 +57,7 @@ export class UsersController {
     
             const token = JWT.generateJwt({ id: user._id });
     
-            res.status(200).json({ message: 'Logged in successfully', token: token, userId: user._id }); // Return the token in the response body
+            res.status(200).json({ message: 'Logged in successfully', token: token, userId: user._id, isAdmin: user.isAdmin}); // Return the token in the response body
     
         } catch (error) {
             next(error);
